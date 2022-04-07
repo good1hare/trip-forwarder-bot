@@ -1,15 +1,17 @@
 package main
 
 import (
+	TelegramBotAPI "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"trip-forwarder-bot/config"
-
-	TelegramBotAPI "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"trip-forwarder-bot/models"
 )
 
 var conf = config.New()
 
 func main() {
+	db := models.ConnectDB()
+
 	bot, err := TelegramBotAPI.NewBotAPI(conf.TelegramBot.BotToken)
 	if err != nil {
 		log.Panic(err)
@@ -30,6 +32,8 @@ func main() {
 
 			if update.Message.Text == "/start" {
 				message := TelegramBotAPI.NewMessage(update.Message.Chat.ID, "Буду рад вам помочь :)")
+				user := models.User{Name: update.Message.From.UserName}
+				db.Create(&user)
 				_, err := bot.Send(message)
 				if err != nil {
 					log.Print("Error")
